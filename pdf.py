@@ -7,7 +7,7 @@ PIPE = asyncio.subprocess.PIPE
 # cpdf -scale-to-fit <to> <source> -o <target>
 async def scale(source, target, to="a5portrait"):
     cmd = "cpdf"
-    args = " ".join(("-scale-to-fit", to, source, "-o", target))
+    args = " ".join(("-scale-to-fit", to, quote(source), "-o", quote(target)))
     print("Command(scale): ", cmd + " " + args)
     proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
@@ -29,7 +29,7 @@ async def addText(
         font_size=10
 ):
     cmd = "cpdf"
-    args = " ".join(("-add-text", quote(text), position, "-font", quote(font), "-font-size", str(font_size), source, "-o", target))
+    args = " ".join(("-add-text", quote(text), position, "-font", quote(font), "-font-size", str(font_size), quote(source), "-o", quote(target)))
     print("Command(addText): ", cmd + " " + args)
     proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
@@ -41,7 +41,7 @@ async def addText(
 # sources is an array of filenames
 async def merge(sources, target):
     cmd = "cpdf"
-    args = " ".join(("-merge", *sources, "-o", target))
+    args = " ".join(("-merge", *sources.map(lambda x: quote(x)), "-o", quote(target)))
     print("Command(merge): ", cmd + " " + args)
     proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
@@ -49,21 +49,17 @@ async def merge(sources, target):
     return proc.returncode
 
 async def main():
+    # loop = asyncio.get_event_loop()
+    # group1 = asyncio.gather(*[coro("group 1.{}".format(i)) for i in range(1, 6)])
+    # group2 = asyncio.gather(*[coro("group 2.{}".format(i)) for i in range(1, 4)])
+    # group3 = asyncio.gather(*[coro("group 3.{}".format(i)) for i in range(1, 10)])
+
+    # all_groups = asyncio.gather(group1, group2, group3)
+    # results = loop.run_until_complete(all_groups)
+    # loop.close()
+    # pprint(results)
     pass
 
-# loop = asyncio.get_event_loop()
-
-# group1 = asyncio.gather(*[coro("group 1.{}".format(i)) for i in range(1, 6)])
-# group2 = asyncio.gather(*[coro("group 2.{}".format(i)) for i in range(1, 4)])
-# group3 = asyncio.gather(*[coro("group 3.{}".format(i)) for i in range(1, 10)])
-
-# all_groups = asyncio.gather(group1, group2, group3)
-
-# results = loop.run_until_complete(all_groups)
-
-# loop.close()
-
-# pprint(results)
 
 
 # Directory containing all the pdfs
@@ -74,12 +70,12 @@ async def main():
 # Add Page numbers to all the pdfs at bottom center
 # Add Room number and time to all pdfs
 # Add the abstract type at the top to all the pdfs
+
+asyncio.run(addText(sys.argv[1], sys.argv[2], "Hi", "-bottomleft 10"))
+asyncio.run(addText(sys.argv[2], sys.argv[2], "Bye", "-bottomright 10"))
+
 # Merge all the pdfs into a single one
+# asyncio.run(merge([sys.argv[1], sys.argv[2]], sys.argv[3]))
 
 # Scale the final pdf to A5
 # asyncio.run(scale(sys.argv[1], sys.argv[2]))
-asyncio.run(addText(sys.argv[1], sys.argv[2], "Hi", "-bottomleft 10"))
-asyncio.run(addText(sys.argv[2], sys.argv[2], "Bye", "-bottomright 10"))
-# asyncio.run(merge([sys.argv[1], sys.argv[2]], sys.argv[3]))
-
-
