@@ -1,15 +1,20 @@
 import sys
 import asyncio
 
+PIPE = asyncio.subprocess.PIPE
+
 # scale pdf
 # cpdf -scale-to-fit <to> <source> -o <target>
 async def scale(source, target, to="a5portrait"):
     cmd = "cpdf"
     args = " ".join(("-scale-to-fit", to, source, "-o", target))
-    proc = await asyncio.create_subprocess_shell(cmd + " " + args)
+    proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
-    await proc.communicate()
+    _, _= await proc.communicate() # stdout, stderr
     return proc.returncode
+
+def quote(text):
+    return "'" + text + "'"
 
 # add text to pdf
 # cpdf -add-text "Test: Room no: 112" <position> -font <font> -font-size <font_size> <source> -o <target>
@@ -23,10 +28,11 @@ async def addText(
         font_size=10
 ):
     cmd = "cpdf"
-    args = " ".join(("-add-text", text, position, font, "-font-size", str(font_size), source, "-o", target))
-    proc = await asyncio.create_subprocess_shell(cmd + " " + args)
+    args = " ".join(("-add-text", quote(text), position, "-font", quote(font), "-font-size", str(font_size), source, "-o", target))
+    print("Command: ", cmd + " " + args)
+    proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
-    await proc.communicate()
+    _, _= await proc.communicate() # stdout, stderr
     return proc.returncode
 
 # merge pdf
@@ -35,9 +41,9 @@ async def addText(
 async def merge(sources, target):
     cmd = "cpdf"
     args = " ".join(("-merge", *sources, "-o", target))
-    proc = await asyncio.create_subprocess_shell(cmd + " " + args)
+    proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
-    await proc.communicate()
+    _, _= await proc.communicate() # stdout, stderr
     return proc.returncode
 
 async def main():
@@ -72,9 +78,9 @@ async def main():
 
 
 # Directory containing all the pdfs
-dir = sys.argv[1]
-dataFile = sys.argv[2]
-target = sys.argv[3] or "untitled.pdf"
+# dir = sys.argv[1]
+# dataFile = sys.argv[2]
+# target = sys.argv[3] or "untitled.pdf"
 
 # Add Page numbers to all the pdfs at bottom center
 # Add Room number and time to all pdfs
@@ -82,6 +88,8 @@ target = sys.argv[3] or "untitled.pdf"
 # Merge all the pdfs into a single one
 
 # Scale the final pdf to A5
-asyncio.run(scale(sys.argv[1], sys.argv[2]))
+# asyncio.run(scale(sys.argv[1], sys.argv[2]))
+asyncio.run(addText(sys.argv[1], sys.argv[2], "Hi", "-bottomleft 10"))
+asyncio.run(addText(sys.argv[2], sys.argv[2], "Bye", "-bottomright 10"))
 
 
