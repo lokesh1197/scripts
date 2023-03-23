@@ -8,6 +8,7 @@ PIPE = asyncio.subprocess.PIPE
 async def scale(source, target, to="a5portrait"):
     cmd = "cpdf"
     args = " ".join(("-scale-to-fit", to, source, "-o", target))
+    print("Command(scale): ", cmd + " " + args)
     proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
     _, _= await proc.communicate() # stdout, stderr
@@ -29,7 +30,7 @@ async def addText(
 ):
     cmd = "cpdf"
     args = " ".join(("-add-text", quote(text), position, "-font", quote(font), "-font-size", str(font_size), source, "-o", target))
-    print("Command: ", cmd + " " + args)
+    print("Command(addText): ", cmd + " " + args)
     proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
     _, _= await proc.communicate() # stdout, stderr
@@ -41,6 +42,7 @@ async def addText(
 async def merge(sources, target):
     cmd = "cpdf"
     args = " ".join(("-merge", *sources, "-o", target))
+    print("Command(merge): ", cmd + " " + args)
     proc = await asyncio.create_subprocess_shell(cmd + " " + args, stdout=PIPE, stderr=PIPE)
 
     _, _= await proc.communicate() # stdout, stderr
@@ -48,19 +50,6 @@ async def merge(sources, target):
 
 async def main():
     pass
-
-# import asyncio
-# from pprint import pprint
-
-# import random
-
-
-# async def coro(tag):
-#     print(">", tag)
-#     await asyncio.sleep(random.uniform(1, 3))
-#     print("<", tag)
-#     return tag
-
 
 # loop = asyncio.get_event_loop()
 
@@ -91,5 +80,6 @@ async def main():
 # asyncio.run(scale(sys.argv[1], sys.argv[2]))
 asyncio.run(addText(sys.argv[1], sys.argv[2], "Hi", "-bottomleft 10"))
 asyncio.run(addText(sys.argv[2], sys.argv[2], "Bye", "-bottomright 10"))
+# asyncio.run(merge([sys.argv[1], sys.argv[2]], sys.argv[3]))
 
 
